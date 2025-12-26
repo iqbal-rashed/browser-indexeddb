@@ -8,7 +8,7 @@ export default defineConfig([
     clean: true,
     target: 'es2020',
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
   },
   {
     entry: ['src/index.ts'],
@@ -17,6 +17,6 @@ export default defineConfig([
     outDir: 'dist',
     dts: true,
     clean: true,
-    sourcemap: true,
+    sourcemap: false,
   },
 ]);
