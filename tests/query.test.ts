@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { QueryEngine } from '../src/core/QueryEngine';
 
@@ -9,6 +10,7 @@ interface TestDoc {
   role?: string;
   active?: boolean;
   tags?: string[];
+  [key: string]: unknown;
 }
 
 describe('QueryEngine', () => {
@@ -18,9 +20,33 @@ describe('QueryEngine', () => {
   beforeEach(() => {
     engine = new QueryEngine<TestDoc>();
     docs = [
-      { _id: '1', name: 'Alice', age: 25, email: 'alice@test.com', role: 'admin', active: true, tags: ['a', 'b'] },
-      { _id: '2', name: 'Bob', age: 30, email: 'bob@test.com', role: 'user', active: true, tags: ['b', 'c'] },
-      { _id: '3', name: 'Charlie', age: 35, email: 'charlie@test.com', role: 'user', active: false, tags: ['c'] },
+      {
+        _id: '1',
+        name: 'Alice',
+        age: 25,
+        email: 'alice@test.com',
+        role: 'admin',
+        active: true,
+        tags: ['a', 'b'],
+      },
+      {
+        _id: '2',
+        name: 'Bob',
+        age: 30,
+        email: 'bob@test.com',
+        role: 'user',
+        active: true,
+        tags: ['b', 'c'],
+      },
+      {
+        _id: '3',
+        name: 'Charlie',
+        age: 35,
+        email: 'charlie@test.com',
+        role: 'user',
+        active: false,
+        tags: ['c'],
+      },
       { _id: '4', name: 'Diana', age: 28, role: 'guest', active: true },
     ];
   });

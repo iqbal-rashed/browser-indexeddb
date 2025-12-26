@@ -4,7 +4,7 @@ export default defineConfig([
   {
     entry: ['src/index.ts'],
     format: ['esm'],
-    dts: true,
+    dts: false,
     clean: true,
     target: 'es2020',
     outDir: 'dist',
@@ -15,6 +15,8 @@ export default defineConfig([
     format: ['cjs'],
     target: 'es2020',
     outDir: 'dist',
-    outExtension: () => ({ js: '.cjs' }),
+    dts: true,
+    clean: true,
+    sourcemap: true,
   },
 ]);

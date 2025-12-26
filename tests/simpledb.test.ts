@@ -1,32 +1,40 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import 'fake-indexeddb/auto';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SimpleDB, CollectionError } from '../src';
 
 describe('SimpleDB', () => {
-  let db: SimpleDB;
+  let db: SimpleDB | null = null;
 
   afterEach(async () => {
-    if (db) {
+    if (db && db.isConnected()) {
       await db.drop();
     }
+    db = null;
   });
 
   describe('constructor', () => {
-    it('should accept string as database name', () => {
-      db = new SimpleDB('test-db');
-      expect(db.getName()).toBe('test-db');
+    it('should accept string as database name', async () => {
+      db = new SimpleDB('test-db-1');
+      await db.connect();
+      expect(db.getName()).toBe('test-db-1');
     });
 
-    it('should accept options object', () => {
-      db = new SimpleDB({ name: 'test-db', version: 2 });
-      expect(db.getName()).toBe('test-db');
+    it('should accept options object', async () => {
+      db = new SimpleDB({ name: 'test-db-2', version: 1 });
+      await db.connect();
+      expect(db.getName()).toBe('test-db-2');
     });
   });
 
   describe('connect/close', () => {
-    it('should connect and close', async () => {
-      db = new SimpleDB('test-db');
-      expect(db.isConnected()).toBe(false);
+    it('should auto-connect and be connected after await', async () => {
+      db = new SimpleDB('test-db-3');
+      await db.connect();
+      expect(db.isConnected()).toBe(true);
+    });
 
+    it('should close connection', async () => {
+      db = new SimpleDB('test-db-4');
       await db.connect();
       expect(db.isConnected()).toBe(true);
 
@@ -35,44 +43,40 @@ describe('SimpleDB', () => {
     });
 
     it('should handle multiple connect calls', async () => {
-      db = new SimpleDB('test-db');
+      db = new SimpleDB('test-db-5');
       await db.connect();
-      await db.connect(); // Should not throw
+      await db.connect();
       expect(db.isConnected()).toBe(true);
     });
   });
 
   describe('collection', () => {
-    it('should create and return a collection', async () => {
-      db = new SimpleDB('test-db');
+    beforeEach(async () => {
+      db = new SimpleDB('test-db-6');
       await db.connect();
+    });
 
-      const users = db.collection('users');
+    it('should create and return a collection', () => {
+      const users = db!.collection('users');
       expect(users).toBeDefined();
       expect(users.getName()).toBe('users');
     });
 
-    it('should return same collection instance', async () => {
-      db = new SimpleDB('test-db');
-      await db.connect();
-
-      const users1 = db.collection('users');
-      const users2 = db.collection('users');
+    it('should return same collection instance', () => {
+      const users1 = db!.collection('users');
+      const users2 = db!.collection('users');
       expect(users1).toBe(users2);
     });
 
-    it('should throw for invalid collection name', async () => {
-      db = new SimpleDB('test-db');
-      await db.connect();
-
-      expect(() => db.collection('')).toThrow(CollectionError);
-      expect(() => db.collection('123invalid')).toThrow(CollectionError);
+    it('should throw for invalid collection name', () => {
+      expect(() => db!.collection('')).toThrow(CollectionError);
+      expect(() => db!.collection('123invalid')).toThrow(CollectionError);
     });
   });
 
   describe('dropCollection', () => {
     it('should drop a collection', async () => {
-      db = new SimpleDB('test-db');
+      db = new SimpleDB('test-db-7');
       await db.connect();
 
       const users = db.collection('users');
@@ -85,7 +89,7 @@ describe('SimpleDB', () => {
 
   describe('drop', () => {
     it('should drop the entire database', async () => {
-      db = new SimpleDB('test-db');
+      db = new SimpleDB('test-db-8');
       await db.connect();
 
       db.collection('users');
@@ -93,6 +97,7 @@ describe('SimpleDB', () => {
 
       await db.drop();
       expect(db.isConnected()).toBe(false);
+      db = null; // Already dropped
     });
   });
 });

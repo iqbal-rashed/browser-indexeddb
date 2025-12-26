@@ -11,9 +11,11 @@ export class SimpleDB {
   private readonly storage: Storage;
   private readonly collections: Map<string, Collection<Document>> = new Map();
   private connected: boolean = false;
+  private connectionPromise: Promise<void> | null = null;
 
   /**
    * Create a new SimpleDB instance
+   * Automatically initiates connection to the database
    * @param options Database configuration options
    */
   constructor(options: SimpleDBOptions | string) {
@@ -23,16 +25,32 @@ export class SimpleDB {
       this.options = options;
     }
     this.storage = new Storage(this.options.name, this.options.version);
+
+    // Auto-connect on instantiation
+    this.connectionPromise = this.initConnection();
+  }
+
+  /**
+   * Internal method to initialize the connection
+   */
+  private async initConnection(): Promise<void> {
+    await this.storage.open();
+    this.connected = true;
   }
 
   /**
    * Connect to the database (initialize IndexedDB)
+   * Returns immediately if already connected or connecting
    */
   async connect(): Promise<void> {
     if (this.connected) return;
 
-    await this.storage.open();
-    this.connected = true;
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
+    this.connectionPromise = this.initConnection();
+    return this.connectionPromise;
   }
 
   /**

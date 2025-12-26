@@ -12,7 +12,7 @@ A simple, type-safe IndexedDB wrapper with MongoDB-like API for browser applicat
 - 📦 **Dual Module Support** - Works with both ESM and CommonJS bundlers
 - 🔒 **Type-Safe** - Full TypeScript support with generics
 - 🔍 **MongoDB-like Queries** - Familiar query operators (`$eq`, `$gt`, `$in`, `$regex`, etc.)
-- ⚡ **Fast & Efficient** - Direct IndexedDB access with minimal overhead
+- ⚡ **Auto-Connect** - Database connects automatically on instantiation
 - ✅ **Schema Validation** - Optional Zod integration for document validation
 - 🌐 **Browser Native** - Uses IndexedDB for persistent storage
 
@@ -27,6 +27,7 @@ yarn add simple-indexed-db
 ```
 
 For schema validation (optional):
+
 ```bash
 npm install zod
 ```
@@ -43,7 +44,10 @@ interface User extends Document {
   age: number;
 }
 
+// Create database - auto-connects!
 const db = new SimpleDB('my-app');
+
+// Optional: wait for connection if you need it immediately
 await db.connect();
 
 const users = db.collection<User>('users');
@@ -69,26 +73,29 @@ db.close();
 
 ## 📖 API Reference
 
-### SimpleDB Methods
+### SimpleDB
 
 ```typescript
 const db = new SimpleDB('database-name');
 
-await db.connect();                    // Initialize database
+// Connection (auto-connects, but can await if needed)
+await db.connect();                    // Wait for connection
 db.close();                            // Close connection
+db.isConnected();                      // Check connection status
+
+// Collections
 db.collection<T>('name', {schema?});   // Get typed collection
 db.listCollections();                  // List all collections
 db.hasCollection('name');              // Check if exists
 await db.dropCollection('name');       // Delete collection
 await db.drop();                       // Delete entire database
-db.isConnected();                      // Check connection status
 ```
 
 ### Collection Methods
 
 ```typescript
 // Insert
-await collection.insert(doc);            // With duplicate check
+await collection.insert(doc);            // Insert with duplicate check
 await collection.insertFast(doc);        // Skip duplicate check (faster)
 await collection.insertMany(docs);       // Bulk insert
 
@@ -110,30 +117,27 @@ await collection.deleteOne(query);       // Delete first match
 await collection.deleteById(id);         // Delete by ID
 await collection.clear();                // Clear all documents
 await collection.drop();                 // Drop collection
-
-// Utility
-collection.getName();                    // Get collection name
 ```
 
 ## 🔍 Query Operators
 
 ### Comparison
 
-| Operator | Example |
-|----------|---------|
-| `$eq` | `{ age: { $eq: 25 } }` |
-| `$ne` | `{ status: { $ne: 'deleted' } }` |
-| `$gt` / `$gte` | `{ age: { $gte: 18 } }` |
-| `$lt` / `$lte` | `{ price: { $lt: 100 } }` |
+| Operator       | Example                               |
+| -------------- | ------------------------------------- |
+| `$eq`          | `{ age: { $eq: 25 } }`                |
+| `$ne`          | `{ status: { $ne: 'deleted' } }`      |
+| `$gt` / `$gte` | `{ age: { $gte: 18 } }`               |
+| `$lt` / `$lte` | `{ price: { $lt: 100 } }`             |
 | `$in` / `$nin` | `{ role: { $in: ['admin', 'mod'] } }` |
 
 ### String
 
-| Operator | Example |
-|----------|---------|
-| `$regex` | `{ email: { $regex: /@gmail\.com$/ } }` |
-| `$startsWith` | `{ name: { $startsWith: 'John' } }` |
-| `$endsWith` | `{ email: { $endsWith: '.com' } }` |
+| Operator      | Example                                 |
+| ------------- | --------------------------------------- |
+| `$regex`      | `{ email: { $regex: /@gmail\.com$/ } }` |
+| `$startsWith` | `{ name: { $startsWith: 'John' } }`     |
+| `$endsWith`   | `{ email: { $endsWith: '.com' } }`      |
 
 ### Logical
 
@@ -151,20 +155,28 @@ collection.getName();                    // Get collection name
 ### Existence
 
 ```typescript
-{ email: { $exists: true } }   // Field exists
-{ deletedAt: { $exists: false } }  // Field doesn't exist
+{
+  email: {
+    $exists: true;
+  }
+} // Field exists
+{
+  deletedAt: {
+    $exists: false;
+  }
+} // Field doesn't exist
 ```
 
 ## 📝 Update Operators
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `$set` | Set field | `{ $set: { name: 'New' } }` |
-| `$unset` | Remove field | `{ $unset: { temp: true } }` |
-| `$inc` | Increment | `{ $inc: { views: 1 } }` |
-| `$push` | Add to array | `{ $push: { tags: 'new' } }` |
-| `$pull` | Remove from array | `{ $pull: { tags: 'old' } }` |
-| `$addToSet` | Add unique | `{ $addToSet: { tags: 'unique' } }` |
+| Operator    | Description       | Example                             |
+| ----------- | ----------------- | ----------------------------------- |
+| `$set`      | Set field         | `{ $set: { name: 'New' } }`         |
+| `$unset`    | Remove field      | `{ $unset: { temp: true } }`        |
+| `$inc`      | Increment         | `{ $inc: { views: 1 } }`            |
+| `$push`     | Add to array      | `{ $push: { tags: 'new' } }`        |
+| `$pull`     | Remove from array | `{ $pull: { tags: 'old' } }`        |
+| `$addToSet` | Add unique        | `{ $addToSet: { tags: 'unique' } }` |
 
 ## ✅ Schema Validation (Zod)
 
@@ -173,9 +185,10 @@ import { z } from 'zod';
 import { SimpleDB, ValidationError } from 'simple-indexed-db';
 
 const UserSchema = z.object({
-  _id: z.string(),
+  _id: z.string().optional(),
   name: z.string().min(1),
   email: z.string().email(),
+  role: z.enum(['admin', 'user']).optional(),
 });
 
 type User = z.infer<typeof UserSchema>;
@@ -201,6 +214,7 @@ try {
 ## 📁 Browser Storage
 
 Data is stored in IndexedDB, which provides:
+
 - **Persistent storage** - Data survives browser restarts
 - **Large capacity** - Much larger than localStorage (typically 50MB+)
 - **Structured data** - Native support for objects and arrays
@@ -211,14 +225,28 @@ Data is stored in IndexedDB, which provides:
 # Install dependencies
 yarn install
 
-# Run tests
+# Run unit tests (vitest + fake-indexeddb)
 yarn test
+
+# Run browser tests (Playwright)
+yarn test:browser
+yarn test:browser:headed  # with browser UI
+
+# Run all tests
+yarn test:all
+
+# Run examples (uses fake-indexeddb for Node.js)
+yarn example:basic
+yarn example:zod
 
 # Build
 yarn build
 
 # Lint
 yarn lint
+
+# Type check
+yarn typecheck
 ```
 
 ## 📄 License

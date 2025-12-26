@@ -1,5 +1,6 @@
+import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SimpleDB, Collection, ValidationError, DuplicateKeyError } from '../src';
+import { SimpleDB, Collection, DuplicateKeyError } from '../src';
 
 interface User {
   _id: string;
@@ -8,20 +9,25 @@ interface User {
   age?: number;
   role?: string;
   tags?: string[];
+  [key: string]: unknown;
 }
 
 describe('Collection', () => {
   let db: SimpleDB;
   let users: Collection<User>;
+  let testId = 0;
 
   beforeEach(async () => {
-    db = new SimpleDB('test-db');
+    testId++;
+    db = new SimpleDB(`collection-test-db-${testId}`);
     await db.connect();
     users = db.collection<User>('users');
   });
 
   afterEach(async () => {
-    await db.drop();
+    if (db && db.isConnected()) {
+      await db.drop();
+    }
   });
 
   describe('insert', () => {
@@ -320,12 +326,10 @@ describe('Collection', () => {
         tags: ['existing'],
       });
 
-      // Add new item
       await users.updateById('addtoset-test', { $addToSet: { tags: 'new' } });
       let user = await users.findById('addtoset-test');
       expect(user?.tags).toHaveLength(2);
 
-      // Try to add duplicate - should not add
       await users.updateById('addtoset-test', { $addToSet: { tags: 'existing' } });
       user = await users.findById('addtoset-test');
       expect(user?.tags).toHaveLength(2);
