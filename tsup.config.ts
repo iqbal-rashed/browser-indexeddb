@@ -16,7 +16,17 @@ export default defineConfig([
     target: 'es2020',
     outDir: 'dist',
     dts: true,
-    clean: true,
+    clean: false,
+    sourcemap: false,
+  },
+  {
+    entry: ['src/index.ts'],
+    format: ['iife'],
+    target: 'es2020',
+    outDir: 'dist',
+    outExtension: () => ({ js: '.global.js' }),
+    clean: false,
+    minify: true,
     sourcemap: false,
   },
 ]);

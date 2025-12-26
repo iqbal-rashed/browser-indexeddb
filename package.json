@@ -1,6 +1,6 @@
 {
-  "name": "simple-indexed-db",
-  "version": "0.0.1",
+  "name": "browser-indexeddb",
+  "version": "0.0.2",
   "description": "A simple, type-safe IndexedDB wrapper with MongoDB-like API for browser applications",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/iqbal-rashed/simple-indexed-db.git"
+    "url": "https://github.com/iqbal-rashed/browser-indexeddb.git"
   },
   "keywords": [
     "indexeddb",
@@ -54,9 +54,9 @@
   "author": "Rashed Iqbal",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/iqbal-rashed/simple-indexed-db/issues"
+    "url": "https://github.com/iqbal-rashed/browser-indexeddb/issues"
   },
-  "homepage": "https://github.com/iqbal-rashed/simple-indexed-db#readme",
+  "homepage": "https://github.com/iqbal-rashed/browser-indexeddb#readme",
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@playwright/test": "^1.49.1",

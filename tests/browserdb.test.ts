@@ -1,9 +1,8 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SimpleDB, CollectionError } from '../src';
-
-describe('SimpleDB', () => {
-  let db: SimpleDB | null = null;
+import { BrowserDB, CollectionError } from '../src';
+describe('BrowserDB', () => {
+  let db: BrowserDB | null = null;
 
   afterEach(async () => {
     if (db && db.isConnected()) {
@@ -14,13 +13,13 @@ describe('SimpleDB', () => {
 
   describe('constructor', () => {
     it('should accept string as database name', async () => {
-      db = new SimpleDB('test-db-1');
+      db = new BrowserDB('test-db-1');
       await db.connect();
       expect(db.getName()).toBe('test-db-1');
     });
 
     it('should accept options object', async () => {
-      db = new SimpleDB({ name: 'test-db-2', version: 1 });
+      db = new BrowserDB({ name: 'test-db-2', version: 1 });
       await db.connect();
       expect(db.getName()).toBe('test-db-2');
     });
@@ -28,13 +27,13 @@ describe('SimpleDB', () => {
 
   describe('connect/close', () => {
     it('should auto-connect and be connected after await', async () => {
-      db = new SimpleDB('test-db-3');
+      db = new BrowserDB('test-db-3');
       await db.connect();
       expect(db.isConnected()).toBe(true);
     });
 
     it('should close connection', async () => {
-      db = new SimpleDB('test-db-4');
+      db = new BrowserDB('test-db-4');
       await db.connect();
       expect(db.isConnected()).toBe(true);
 
@@ -43,7 +42,7 @@ describe('SimpleDB', () => {
     });
 
     it('should handle multiple connect calls', async () => {
-      db = new SimpleDB('test-db-5');
+      db = new BrowserDB('test-db-5');
       await db.connect();
       await db.connect();
       expect(db.isConnected()).toBe(true);
@@ -52,7 +51,7 @@ describe('SimpleDB', () => {
 
   describe('collection', () => {
     beforeEach(async () => {
-      db = new SimpleDB('test-db-6');
+      db = new BrowserDB('test-db-6');
       await db.connect();
     });
 
@@ -76,7 +75,7 @@ describe('SimpleDB', () => {
 
   describe('dropCollection', () => {
     it('should drop a collection', async () => {
-      db = new SimpleDB('test-db-7');
+      db = new BrowserDB('test-db-7');
       await db.connect();
 
       const users = db.collection('users');
@@ -89,7 +88,7 @@ describe('SimpleDB', () => {
 
   describe('drop', () => {
     it('should drop the entire database', async () => {
-      db = new SimpleDB('test-db-8');
+      db = new BrowserDB('test-db-8');
       await db.connect();
 
       db.collection('users');

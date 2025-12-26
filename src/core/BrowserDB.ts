@@ -1,24 +1,24 @@
-import type { Document, SimpleDBOptions } from '../types';
+import type { Document, BrowserDBOptions } from '../types';
 import { Storage } from './Storage';
 import { Collection, SchemaValidator } from './Collection';
 import { CollectionError } from '../errors';
 
 /**
- * SimpleDB - A simple IndexedDB wrapper with MongoDB-like API
+ * BrowserDB - A simple IndexedDB wrapper with MongoDB-like API
  */
-export class SimpleDB {
-  private readonly options: SimpleDBOptions;
+export class BrowserDB {
+  private readonly options: BrowserDBOptions;
   private readonly storage: Storage;
   private readonly collections: Map<string, Collection<Document>> = new Map();
   private connected: boolean = false;
   private connectionPromise: Promise<void> | null = null;
 
   /**
-   * Create a new SimpleDB instance
+   * Create a new BrowserDB instance
    * Automatically initiates connection to the database
    * @param options Database configuration options
    */
-  constructor(options: SimpleDBOptions | string) {
+  constructor(options: BrowserDBOptions | string) {
     if (typeof options === 'string') {
       this.options = { name: options };
     } else {

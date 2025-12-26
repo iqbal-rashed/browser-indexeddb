@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SimpleDB, Collection, DuplicateKeyError } from '../src';
+import { BrowserDB, Collection, DuplicateKeyError } from '../src';
 
 interface User {
   _id: string;
@@ -13,13 +13,13 @@ interface User {
 }
 
 describe('Collection', () => {
-  let db: SimpleDB;
+  let db: BrowserDB;
   let users: Collection<User>;
   let testId = 0;
 
   beforeEach(async () => {
     testId++;
-    db = new SimpleDB(`collection-test-db-${testId}`);
+    db = new BrowserDB(`collection-test-db-${testId}`);
     await db.connect();
     users = db.collection<User>('users');
   });

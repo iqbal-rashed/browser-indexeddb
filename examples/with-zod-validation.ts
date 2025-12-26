@@ -1,11 +1,11 @@
 /**
- * Zod Schema Validation Example for simple-indexed-db
+ * Zod Schema Validation Example for browser-indexeddb
  *
  * This example demonstrates how to use Zod schemas for document validation.
  */
 import 'fake-indexeddb/auto';
 import { z } from 'zod';
-import { SimpleDB, ValidationError, Document } from '../src';
+import { BrowserDB, ValidationError, Document } from '../src';
 
 // Define Zod schema - make all fields that are auto-generated optional
 const UserSchema = z.object({
@@ -26,7 +26,7 @@ interface User extends Document {
 }
 
 async function main() {
-  const db = new SimpleDB('validation-example');
+  const db = new BrowserDB('validation-example');
   await db.connect();
 
   console.log('✅ Connected to database');

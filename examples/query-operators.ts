@@ -1,10 +1,10 @@
 /**
- * Query Operators Example for simple-indexed-db
+ * Query Operators Example for browser-indexeddb
  *
  * This example demonstrates all available query operators.
  */
 import 'fake-indexeddb/auto';
-import { SimpleDB, Document } from '../src';
+import { BrowserDB, Document } from '../src';
 
 interface Product extends Document {
   _id: string;
@@ -17,7 +17,7 @@ interface Product extends Document {
 }
 
 async function main() {
-  const db = new SimpleDB('query-example');
+  const db = new BrowserDB('query-example');
   await db.connect();
 
   console.log('✅ Connected to database\n');

@@ -1,18 +1,38 @@
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 
-test.describe('SimpleDB', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForFunction(() => typeof (window as any).SimpleDB !== 'undefined', {
-      timeout: 5000,
+const libraryScript = fs.readFileSync(path.join(__dirname, '../dist/index.mjs'), 'utf-8');
+
+// Library auto-registers to window, so we just need to load it
+const htmlContent = `<!DOCTYPE html><html><head></head><body>
+  <script type="module">${libraryScript}</script>
+</body></html>`;
+
+async function setupPage(page: import('@playwright/test').Page) {
+  await page.route('/', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: htmlContent,
     });
+  });
+  await page.goto('/');
+  await page.waitForFunction(() => typeof (window as any).BrowserDB !== 'undefined', {
+    timeout: 5000,
+  });
+}
+
+test.describe('BrowserDB', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupPage(page);
   });
 
   test.describe('constructor and connection', () => {
     test('should accept string as database name', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const name = db.getName();
         await db.drop();
@@ -23,8 +43,8 @@ test.describe('SimpleDB', () => {
 
     test('should auto-connect on instantiation', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const connected = db.isConnected();
         await db.drop();
@@ -35,8 +55,8 @@ test.describe('SimpleDB', () => {
 
     test('should close connection', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         db.close();
         const connected = db.isConnected();
@@ -49,8 +69,8 @@ test.describe('SimpleDB', () => {
   test.describe('collection management', () => {
     test('should create and return a collection', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         const name = users.getName();
@@ -63,8 +83,8 @@ test.describe('SimpleDB', () => {
 
     test('should return same collection instance', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users1 = db.collection('users');
         const users2 = db.collection('users');
@@ -77,8 +97,8 @@ test.describe('SimpleDB', () => {
 
     test('should throw for invalid collection name', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         let error1 = null;
         let error2 = null;
@@ -103,17 +123,14 @@ test.describe('SimpleDB', () => {
 
 test.describe('Collection CRUD', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForFunction(() => typeof (window as any).SimpleDB !== 'undefined', {
-      timeout: 5000,
-    });
+    await setupPage(page);
   });
 
   test.describe('insert', () => {
     test('should insert a document and generate _id', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         const user = await users.insert({ name: 'John', email: 'john@example.com', age: 30 });
@@ -126,8 +143,8 @@ test.describe('Collection CRUD', () => {
 
     test('should use provided _id', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         const user = await users.insert({
@@ -143,8 +160,8 @@ test.describe('Collection CRUD', () => {
 
     test('should throw DuplicateKeyError for duplicate _id', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB, DuplicateKeyError: _DuplicateKeyError } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB, DuplicateKeyError: _DuplicateKeyError } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ _id: 'dup-id', name: 'User 1', email: 'u1@example.com' });
@@ -162,8 +179,8 @@ test.describe('Collection CRUD', () => {
 
     test('should insert multiple documents', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         const newUsers = await users.insertMany([
@@ -182,8 +199,8 @@ test.describe('Collection CRUD', () => {
   test.describe('find', () => {
     test('should find all documents', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insertMany([
@@ -199,8 +216,8 @@ test.describe('Collection CRUD', () => {
 
     test('should find by query', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insertMany([
@@ -219,8 +236,8 @@ test.describe('Collection CRUD', () => {
 
     test('should findOne', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ name: 'Alice', email: 'alice@example.com' });
@@ -235,8 +252,8 @@ test.describe('Collection CRUD', () => {
 
     test('should findById', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         const _inserted = await users.insert({ _id: 'test-id', name: 'Test' });
@@ -253,8 +270,8 @@ test.describe('Collection CRUD', () => {
   test.describe('update', () => {
     test('should update with $set', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ _id: 'u1', name: 'Alice', age: 25 });
@@ -268,8 +285,8 @@ test.describe('Collection CRUD', () => {
 
     test('should update with $inc', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ _id: 'u1', name: 'Alice', age: 25 });
@@ -283,8 +300,8 @@ test.describe('Collection CRUD', () => {
 
     test('should updateById', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ _id: 'test', name: 'Test', email: 'test@example.com' });
@@ -299,8 +316,8 @@ test.describe('Collection CRUD', () => {
   test.describe('delete', () => {
     test('should delete by query', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insertMany([
@@ -319,8 +336,8 @@ test.describe('Collection CRUD', () => {
 
     test('should deleteById', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insert({ _id: 'delete-me', name: 'Delete Me' });
@@ -335,8 +352,8 @@ test.describe('Collection CRUD', () => {
 
     test('should clear all documents', async ({ page }) => {
       const result = await page.evaluate(async () => {
-        const { SimpleDB } = window as any;
-        const db = new SimpleDB('test-db');
+        const { BrowserDB } = window as any;
+        const db = new BrowserDB('test-db');
         await db.connect();
         const users = db.collection('users');
         await users.insertMany([{ name: 'User 1' }, { name: 'User 2' }]);
@@ -352,16 +369,13 @@ test.describe('Collection CRUD', () => {
 
 test.describe('Query Operators', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForFunction(() => typeof (window as any).SimpleDB !== 'undefined', {
-      timeout: 5000,
-    });
+    await setupPage(page);
   });
 
   test('should support $gt, $gte, $lt, $lte', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insertMany([
@@ -390,8 +404,8 @@ test.describe('Query Operators', () => {
 
   test('should support $in and $nin', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insertMany([
@@ -410,8 +424,8 @@ test.describe('Query Operators', () => {
 
   test('should support $regex', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insertMany([
@@ -428,8 +442,8 @@ test.describe('Query Operators', () => {
 
   test('should support $exists', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insertMany([
@@ -448,8 +462,8 @@ test.describe('Query Operators', () => {
 
   test('should support $or and $and', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insertMany([
@@ -469,16 +483,13 @@ test.describe('Query Operators', () => {
 
 test.describe('Array Operations', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForFunction(() => typeof (window as any).SimpleDB !== 'undefined', {
-      timeout: 5000,
-    });
+    await setupPage(page);
   });
 
   test('should support $push', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insert({ _id: 'u1', name: 'Alice', tags: ['initial'] });
@@ -493,8 +504,8 @@ test.describe('Array Operations', () => {
 
   test('should support $pull', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insert({ _id: 'u1', name: 'Alice', tags: ['keep', 'remove'] });
@@ -509,8 +520,8 @@ test.describe('Array Operations', () => {
 
   test('should support $addToSet', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { SimpleDB } = window as any;
-      const db = new SimpleDB('test-db');
+      const { BrowserDB } = window as any;
+      const db = new BrowserDB('test-db');
       await db.connect();
       const users = db.collection('users');
       await users.insert({ _id: 'u1', name: 'Alice', tags: ['existing'] });

@@ -1,10 +1,10 @@
 /**
- * Update Operators Example for simple-indexed-db
+ * Update Operators Example for browser-indexeddb
  *
  * This example demonstrates all available update operators.
  */
 import 'fake-indexeddb/auto';
-import { SimpleDB, Document } from '../src';
+import { BrowserDB, Document } from '../src';
 
 interface Task extends Document {
   _id: string;
@@ -17,7 +17,7 @@ interface Task extends Document {
 }
 
 async function main() {
-  const db = new SimpleDB('update-example');
+  const db = new BrowserDB('update-example');
   await db.connect();
 
   console.log('✅ Connected to database\n');

@@ -1,11 +1,11 @@
 /**
- * Basic Usage Example for simple-indexed-db
+ * Basic Usage Example for browser-indexeddb
  *
  * This example demonstrates fundamental CRUD operations
  * with the SimpleDB package.
  */
 import 'fake-indexeddb/auto';
-import { SimpleDB, Document } from '../src';
+import { BrowserDB, Document } from '../src';
 
 // Define your document type with index signature for Document compatibility
 interface User extends Document {
@@ -19,7 +19,7 @@ interface User extends Document {
 
 async function main() {
   // Create database instance - auto-connects!
-  const db = new SimpleDB('my-app-db');
+  const db = new BrowserDB('my-app-db');
 
   // Wait for connection to be ready (optional, but recommended before operations)
   await db.connect();

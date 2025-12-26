@@ -1,6 +1,6 @@
-# simple-indexed-db
+# browser-indexeddb
 
-[![npm version](https://img.shields.io/npm/v/simple-indexed-db.svg)](https://www.npmjs.com/package/simple-indexed-db)
+[![npm version](https://img.shields.io/npm/v/browser-indexeddb.svg)](https://www.npmjs.com/package/browser-indexeddb)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
@@ -10,6 +10,7 @@ A simple, type-safe IndexedDB wrapper with MongoDB-like API for browser applicat
 
 - 🚀 **Zero Dependencies** - No external libraries required
 - 📦 **Dual Module Support** - Works with both ESM and CommonJS bundlers
+- 🌐 **CDN Support** - Ready for global usage via CDN
 - 🔒 **Type-Safe** - Full TypeScript support with generics
 - 🔍 **MongoDB-like Queries** - Familiar query operators (`$eq`, `$gt`, `$in`, `$regex`, etc.)
 - ⚡ **Auto-Connect** - Database connects automatically on instantiation
@@ -19,11 +20,11 @@ A simple, type-safe IndexedDB wrapper with MongoDB-like API for browser applicat
 ## 📦 Installation
 
 ```bash
-npm install simple-indexed-db
+npm install browser-indexeddb
 ```
 
 ```bash
-yarn add simple-indexed-db
+yarn add browser-indexeddb
 ```
 
 For schema validation (optional):
@@ -32,10 +33,47 @@ For schema validation (optional):
 npm install zod
 ```
 
+### 🌐 CDN Usage
+
+**Traditional Script Tag (no module):**
+
+```html
+<script src="https://unpkg.com/browser-indexeddb@latest/dist/index.global.js"></script>
+
+<script>
+  // BrowserDB is available globally on window
+  const db = new BrowserDB('my-app-db');
+
+  db.connect().then(async function () {
+    console.log('Connected!');
+    await db.collection('visitors').insert({
+      userAgent: navigator.userAgent,
+      time: new Date(),
+    });
+  });
+</script>
+```
+
+**ES Module:**
+
+```html
+<script type="module">
+  import { BrowserDB } from 'https://unpkg.com/browser-indexeddb@latest/dist/index.mjs';
+
+  const db = new BrowserDB('my-app-db');
+  await db.connect();
+
+  await db.collection('visitors').insert({
+    userAgent: navigator.userAgent,
+    time: new Date(),
+  });
+</script>
+```
+
 ## 🚀 Quick Start
 
 ```typescript
-import { SimpleDB, Document } from 'simple-indexed-db';
+import { BrowserDB, Document } from 'browser-indexeddb';
 
 interface User extends Document {
   _id: string;
@@ -182,7 +220,7 @@ await collection.drop();                 // Drop collection
 
 ```typescript
 import { z } from 'zod';
-import { SimpleDB, ValidationError } from 'simple-indexed-db';
+import { SimpleDB, ValidationError } from 'browser-indexeddb';
 
 const UserSchema = z.object({
   _id: z.string().optional(),

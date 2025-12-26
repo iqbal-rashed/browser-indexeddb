@@ -1,17 +1,17 @@
 /**
- * Base error class for SimpleDB errors
+ * Base error class for BrowserDB errors
  */
-export class SimpleDBError extends Error {
+export class BrowserDBError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'SimpleDBError';
+    this.name = 'BrowserDBError';
   }
 }
 
 /**
  * Error thrown when a document is not found
  */
-export class DocumentNotFoundError extends SimpleDBError {
+export class DocumentNotFoundError extends BrowserDBError {
   constructor(collectionName: string, id?: string) {
     super(
       id
@@ -25,7 +25,7 @@ export class DocumentNotFoundError extends SimpleDBError {
 /**
  * Error thrown when a duplicate key is detected
  */
-export class DuplicateKeyError extends SimpleDBError {
+export class DuplicateKeyError extends BrowserDBError {
   constructor(collectionName: string, id: string) {
     super(
       `Duplicate key error: document with id "${id}" already exists in collection "${collectionName}"`
@@ -46,7 +46,7 @@ export interface SchemaIssue {
 /**
  * Error thrown when validation fails
  */
-export class ValidationError extends SimpleDBError {
+export class ValidationError extends BrowserDBError {
   public readonly collectionName: string;
   public readonly issues: SchemaIssue[];
   public readonly field?: string;
@@ -66,7 +66,7 @@ export class ValidationError extends SimpleDBError {
 /**
  * Error thrown when storage operations fail
  */
-export class StorageError extends SimpleDBError {
+export class StorageError extends BrowserDBError {
   public readonly cause?: Error;
 
   constructor(message: string, cause?: Error) {
@@ -79,7 +79,7 @@ export class StorageError extends SimpleDBError {
 /**
  * Error thrown when collection operations fail
  */
-export class CollectionError extends SimpleDBError {
+export class CollectionError extends BrowserDBError {
   constructor(message: string) {
     super(message);
     this.name = 'CollectionError';
@@ -89,7 +89,7 @@ export class CollectionError extends SimpleDBError {
 /**
  * Error thrown when IndexedDB is not available
  */
-export class IndexedDBNotAvailableError extends SimpleDBError {
+export class IndexedDBNotAvailableError extends BrowserDBError {
   constructor() {
     super('IndexedDB is not available in this environment');
     this.name = 'IndexedDBNotAvailableError';

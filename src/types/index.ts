@@ -74,9 +74,9 @@ export interface FindOptions<T> {
 }
 
 /**
- * SimpleDB configuration options
+ * BrowserDB configuration options
  */
-export interface SimpleDBOptions {
+export interface BrowserDBOptions {
   /** Database name (used as IndexedDB database name) */
   name: string;
   /** Database version (default: 1) */
