@@ -1,0 +1,89 @@
+{
+  "name": "simple-indexed-db",
+  "version": "0.0.1",
+  "description": "A simple, type-safe IndexedDB wrapper with MongoDB-like API for browser applications",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "dev": "tsup --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run test",
+    "prepare": "husky"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iqbal-rashed/simple-indexed-db.git"
+  },
+  "keywords": [
+    "indexeddb",
+    "database",
+    "db",
+    "browser",
+    "storage",
+    "nosql",
+    "document",
+    "typescript",
+    "mongodb",
+    "query",
+    "lightweight",
+    "local-storage"
+  ],
+  "author": "Rashed Iqbal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iqbal-rashed/simple-indexed-db/issues"
+  },
+  "homepage": "https://github.com/iqbal-rashed/simple-indexed-db#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.5",
+    "@vitest/coverage-v8": "^4.0.16",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "happy-dom": "^16.7.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.4.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.19.1",
+    "vitest": "^4.0.16",
+    "zod": "^4.2.1",
+    "fake-indexeddb": "^6.0.0"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
